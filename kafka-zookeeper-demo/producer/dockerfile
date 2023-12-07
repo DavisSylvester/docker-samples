@@ -1,0 +1,55 @@
+ARG KAFKA_DOWNLOAD_URL
+FROM debian:latest
+
+ARG KAFKA_DOWNLOAD_URL="${KAFKA_DOWNLOAD_URL}"
+ARG API_KEY
+ARG QUOTE_API_ONE_URL
+ARG QUOTE_API_TWO_URL
+ARG NODE_MAJOR
+
+ENV API_KEY="${API_KEY}"
+ENV QUOTE_API_ONE_URL="${QUOTE_API_ONE_URL}"
+ENV QUOTE_API_TWO_URL="${QUOTE_API_TWO_URL}"
+ENV KAFKA_DOWNLOAD_URL="${KAFKA_DOWNLOAD_URL}"
+
+RUN apt update -y
+RUN apt upgrade -y
+RUN apt install -y gpg
+RUN apt install -y curl
+RUN apt install -y sudo
+RUN apt install -y gnupg2
+RUN apt install -y ca-certificates
+RUN apt install -y wget
+RUN apt install -y default-jdk
+
+
+RUN mkdir /downloads
+RUN chmod 777 /downloads
+WORKDIR /downloads
+
+RUN echo "KAFKA URL:" ${KAFKA_DOWNLOAD_URL}
+RUN wget "${KAFKA_DOWNLOAD_URL}"
+
+RUN tar -vxf kafka*.tgz
+RUN rm kafka*.tgz
+
+RUN mkdir -pv /apps/kafka/
+RUN mv /downloads/kafka*/ /apps/kafka/
+
+RUN mkdir -pv /apps/producer-kafka
+WORKDIR /apps/producer-kafka
+
+
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+RUN apt update -y
+
+COPY src/ .
+
+RUN apt install -y nodejs
+
+RUN node --version
+RUN npm install
+
+CMD [ "node", "index.mjs" ]

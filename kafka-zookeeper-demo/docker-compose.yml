@@ -1,0 +1,72 @@
+version: "3.8"
+services:
+
+  kafka:
+    image: dsylvester/kafka:latest
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    entrypoint: "/apps/kafka/bin/kafka-server-start.sh /apps/kafka/config/server.properties"
+    container_name: kafka
+    hostname: kafka
+    networks:
+      - kafa-demo-network
+  
+  zookeeper:
+    # build: ./zookeeper
+    image: "dsylvester/zookeeper:latest"
+    ports:
+      - "2181:2181"
+    entrypoint: "/apps/zookeeper/bin/zkServer.sh start-foreground"
+    container_name: zookeeper
+    hostname: zookeeper
+    networks:
+      - kafa-demo-network
+  
+  db:
+    # command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    # image: "amazon/dynamodb-local:latest"
+    # container_name: dynamodb-local
+    # ports:
+    #   - "8999:8000"
+    build: ./mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MARIADB_USER: "${DB_ROOT_USER}"
+    volumes:
+      - kafkaDemo:/var/lib/mysql
+    ports:  
+      - "3306:3306"
+    container_name: db
+    hostname: db
+    networks:
+      - kafa-demo-network
+    
+  producer:
+    build: ./producer
+    depends_on:
+      - kafka
+      - zookeeper      
+    container_name: producer
+    hostname: producer
+    networks:
+      - kafa-demo-network
+    environment:
+      QUOTE_API_ONE_URL: "${QUOTE_API_ONE_URL}"
+      QUOTE_API_TWO_URL: "${QUOTE_API_ONE_URL}"
+      
+
+volumes:
+  kafkaDemo:
+
+networks:
+  kafa-demo-network:
+      driver: bridge
+      name: kafkaDemoNetwork
+      ipam:
+          driver: default
+          config:
+              - subnet: "172.16.5.0/24"
+    
