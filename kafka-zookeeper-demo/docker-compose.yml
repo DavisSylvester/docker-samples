@@ -11,7 +11,7 @@ services:
     container_name: kafka
     hostname: kafka
     networks:
-      - kafa-demo-network
+      - kafka-demo-network
   
   zookeeper:
     # build: ./zookeeper
@@ -22,7 +22,7 @@ services:
     container_name: zookeeper
     hostname: zookeeper
     networks:
-      - kafa-demo-network
+      - kafka-demo-network
   
   db:
     # command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
@@ -42,17 +42,19 @@ services:
     container_name: db
     hostname: db
     networks:
-      - kafa-demo-network
+      - kafka-demo-network
     
   producer:
-    build: ./producer
+    image: "dsylvester/node_producer:latest"
+    entrypoint: "node /apps/producer-kafka/index.mjs"
+    # build: ./producer
     depends_on:
       - kafka
-      - zookeeper      
+      - db      
     container_name: producer
     hostname: producer
     networks:
-      - kafa-demo-network
+      - kafka-demo-network
     environment:
       QUOTE_API_ONE_URL: "${QUOTE_API_ONE_URL}"
       QUOTE_API_TWO_URL: "${QUOTE_API_ONE_URL}"
@@ -62,7 +64,7 @@ volumes:
   kafkaDemo:
 
 networks:
-  kafa-demo-network:
+  kafka-demo-network:
       driver: bridge
       name: kafkaDemoNetwork
       ipam:

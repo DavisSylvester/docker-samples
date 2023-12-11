@@ -1,16 +1,6 @@
 import { Kafka } from "kafkajs";
 import axios from "axios";
 
-const kafka = new Kafka({
-  clientId: "my-app",
-  brokers: ["kafka:9092"],
-});
-
-const producer = kafka.producer({
-  allowAutoTopicCreation: true,
-  transactionTimeout: 30000
-});
-
 const _axios = axios;
 
 const run = async () => {
@@ -18,85 +8,101 @@ const run = async () => {
     headers: {
       "X-Api-Key": process.env.API_KEY,
     },
-  };
-
-
-  await producer.connect();
+  }; 
 
   try {
     setInterval(async () => {
 
-      const one = await _axios.get(process.env.QUOTE_API_ONE_URL, headers);
+      // const one = await _axios.get(process.env.QUOTE_API_ONE_URL, headers);
       
       try {
-        console.log(
-          "process.env.QUOTE_API_ONE: ",
-          process.env.QUOTE_API_ONE_URL
+        // console.log(
+        //   "process.env.QUOTE_API_ONE: ",
+        //   process.env.QUOTE_API_ONE_URL
+        // );
+
+        // const message  = one.data[0];
+        
+        const randmonNumber = generateRandom();
+        const randomValue = randmonNumber * generateRandom(1, 25);
+
+        console.log("message: ", randmonNumber);
+        
+        const result = {
+          randmonNumber,
+          randomValue
+        };
+
+        console.log('result', result);
+
+        await sendMessage(
+         "test-topic",
+          result,
         );
 
-        const message  = one.data[0];
-
-        console.log("message: ", message);
         
-        await producer.send({
-          topic: "test-topic",
-          messages: [{ key: 'key1', value: 'hello world' },
-          { key: 'key2', value: 'hey hey!' }],
-        });
-
-        console.log(`messages sent`);
-        console.log(`Topic: test-topic\t Message: ${message}`);
       } catch (e) {
         console.log("error sending messages", e);
       }
-    }, 1000 * 60 * 1);
+    }, 1000 * 25 * 1);
   } catch (e) {
     console.log("error sending messages");
     console.log(e);
   }
 
-  try {
-    const two = await _axios.get(process.env.QUOTE_API_TWO_URL, headers);
-
-    const message = two.data[0];
-    
-    setInterval(async () => {
-      try {
-          console.log(
-            "process.env.QUOTE_API_TWO: ",
-            process.env.QUOTE_API_TWO_URL
-          );
-        
-
-        console.log("message: ", message);
-
-        await sendMessage("test-topic", message);
-        // await producer.send({
-        //   topic: "get-quote",
-        //   messages: [message],
-        // });
-
-        console.log(`messages sent`);
-        console.log(`Topic: 'get-quote'\t Message: ${message}`);
-      } catch (e) {
-        console.log("error sending messages");
-        await sendMessage("test-topic", message);
-      }
-    }, 1000 * 60 * 1);
-  } catch (error) {
-    console.log("error sending messages");
-    console.log(error);
-  }
+ 
 };
 
 const sendMessage = async (topic, message) => {
 
-  await producer.send({
-    topic,
-    messages: [message],
+  const kafka = new Kafka({
+    clientId: "my-app",
+    brokers: ["kafka:9092"],
   });
 
+  const producer = kafka.producer({
+    allowAutoTopicCreation: true,
+    transactionTimeout: 30000,
+    connectionTimeout: 3000,
+    retry: {
+      initialRetryTime: 100,
+      retries: 8
+    }
+  });
+
+  await producer.connect();
+
+  const a = await producer.send({
+    topic,
+    messages: [{
+      key: null,
+      value: JSON.stringify(message)
+    }],
+  });
+
+  console.log('a', a);
+  
+  await producer.disconnect()
+
 };
+
+const generateRandom = (min = 0, max = 100000) => {
+
+  // find diff
+  let difference = max - min;
+
+  // generate random number 
+  let rand = Math.random();
+
+  // multiply with difference 
+  rand = Math.floor( rand * difference);
+
+  // add with min value 
+  rand = rand + min;
+
+  return rand;
+}
+
 
 
 await run().catch(console.error);
