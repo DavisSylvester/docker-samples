@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  mongo-one:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "3500:27017"
+    networks:
+      - davis-demo-network
+    #command: ["/usr/bin/mongod", "--config", "/etc/mongod.conf"]
+    volumes:
+      - mongo-data-volume:/data/db1
+
+  mongo-two:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "3520:27017"
+    networks:
+      - davis-demo-network
+      #command: ["/usr/bin/mongod", "--config", "/etc/mongod.conf"]
+    volumes:
+      - mongo-data-volume:/data/db2
+
+  mongo-three:
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "3530:27017"
+    networks:
+      - davis-demo-network
+    volumes:
+      - mongo-data-volume:/data/db3
+    #command: ["/usr/bin/mongod", "--config", "/etc/mongod.conf"]
+
+networks:
+  davis-demo-network:
+    driver: bridge
+    name: davis-demo-network
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.6.0/24"
+
+volumes:
+  mongo-data-volume:
+    name: mongo-data-volume
