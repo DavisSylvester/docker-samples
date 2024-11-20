@@ -21,4 +21,6 @@ COPY mongod.conf /etc/mongod.conf
 
 EXPOSE 27017
 
-CMD [ "/usr/bin/mongod" ]
+ENTRYPOINT [ "/usr/bin/mongod",  "-f",  "/etc/mongod.conf" ]
+
+# CMD "/usr/bin/mongod -f /etc/mongod.conf"
