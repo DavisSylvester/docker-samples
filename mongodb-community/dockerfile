@@ -19,8 +19,6 @@ RUN mkdir -p /data/db
 
 COPY mongod.conf /etc/mongod.conf
 
-COPY create-admin-account.js /var/mongo/create-admin-account.js
-
 EXPOSE 27017
 
 ENTRYPOINT [ "/usr/bin/mongod",  "-f",  "/etc/mongod.conf" ]

@@ -8,6 +8,7 @@ services:
       - davis-demo-network
     volumes:
       - mongo-data-volume:/data/db1
+      # - ../mongo-community/create-admin-account.js:/docker-entrypoint-initdb.d/create-admin-account.js:ro
     environment:
       MONGO_ADMIN_PASSWORD: /run/secrets/mongo-admin-password
     # command: ["/usr/bin/mongosh --file /var/mongo/create-admin-account.js"]

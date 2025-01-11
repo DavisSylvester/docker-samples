@@ -1,0 +1,5 @@
+FROM NODE:21
+WORKDIR /apps/app
+COPY package.json .
+RUN npm install
+RUN npm build
