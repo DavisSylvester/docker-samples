@@ -1,0 +1,11 @@
+FROM dsylvester/davis-mongo-community:latest
+
+WORKDIR /db-seed
+
+COPY seed.js seed.js
+
+COPY seed.sh seed.sh
+
+RUN chmod +x seed.sh
+
+ENTRYPOINT ["/bin/bash", "-c", "/usr/bin/mongod -f /etc/mongod.conf & /db-seed/seed.sh"] 

@@ -1,7 +1,5 @@
 FROM ubuntu:latest
 
-RUN echo "Hello"
-
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install gnupg curl -y
@@ -21,6 +19,9 @@ COPY mongod.conf /etc/mongod.conf
 
 EXPOSE 27017
 
-ENTRYPOINT [ "/usr/bin/mongod",  "-f",  "/etc/mongod.conf" ]
+# ENTRYPOINT [ "/usr/bin/mongod",  "-f",  "/etc/mongod.conf" ]
 
-# CMD "/usr/bin/mongod -f /etc/mongod.conf"
+#  &  /usr/bin/mongosh < /seed.js
+
+#ENTRYPOINT ["/bin/bash", "-c", "postgres & psql -U myuser -d mydb -c 'CREATE TABLE IF NOT EXISTS test (id SERIAL PRIMARY KEY, name VARCHAR(255))'"]
+CMD "/usr/bin/mongod -f /etc/mongod.conf"
